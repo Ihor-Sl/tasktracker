@@ -1,0 +1,28 @@
+#!/bin/sh
+# pre-commit: перевірка стилю JS-файлів ESLint-ом перед кожним комітом.
+# Перевіряється вміст з індексу, тобто саме те, що потрапить у коміт.
+
+ESLINT="node_modules/eslint/bin/eslint.js"
+
+files=$(git diff --cached --name-only --diff-filter=ACMR -- '*.js' '*.mjs' '*.cjs')
+[ -z "$files" ] && exit 0
+
+if [ ! -f "$ESLINT" ]; then
+    echo "pre-commit: ESLint не знайдено, виконайте 'npm install'." >&2
+    exit 1
+fi
+
+echo "pre-commit: перевірка ESLint"
+status=0
+IFS='
+'
+for file in $files; do
+    echo "  $file"
+    git show ":$file" | node "$ESLINT" --stdin --stdin-filename "$file" --max-warnings 0 --no-warn-ignored || status=1
+done
+
+if [ "$status" -ne 0 ]; then
+    echo "pre-commit: коміт скасовано, виправте помилки стилю (npx eslint --fix <файл>)." >&2
+    exit 1
+fi
+echo "pre-commit: помилок не знайдено"
