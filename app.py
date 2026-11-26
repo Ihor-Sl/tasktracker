@@ -1,5 +1,5 @@
 def main():
-    print("Ласкаво просимо до TaskTracker!")
+    print("Вітаємо у TaskTracker v1!")
 
 
 if __name__ == "__main__":
